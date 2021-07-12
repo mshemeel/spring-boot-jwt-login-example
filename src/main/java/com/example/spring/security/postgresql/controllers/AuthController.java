@@ -32,9 +32,15 @@ import com.example.spring.security.postgresql.repository.UserRepository;
 import com.example.spring.security.postgresql.security.jwt.JwtUtils;
 import com.example.spring.security.postgresql.security.services.UserDetailsImpl;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
+@Api(tags = "users")
 public class AuthController {
 	@Autowired
 	AuthenticationManager authenticationManager;
@@ -52,6 +58,10 @@ public class AuthController {
 	JwtUtils jwtUtils;
 
 	@PostMapping("/signin")
+	@ApiOperation(value = "${AuthController.signin}")
+	  @ApiResponses(value = {//
+	      @ApiResponse(code = 400, message = "Something went wrong"), //
+	      @ApiResponse(code = 422, message = "Invalid username/password supplied")})
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
 		Authentication authentication = authenticationManager.authenticate(
@@ -69,6 +79,11 @@ public class AuthController {
 	}
 
 	@PostMapping("/signup")
+	@ApiOperation(value = "${AuthController.signup}")
+	  @ApiResponses(value = {//
+	      @ApiResponse(code = 400, message = "Something went wrong"), //
+	      @ApiResponse(code = 403, message = "Access denied"), //
+	      @ApiResponse(code = 422, message = "Username is already in use")})
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
@@ -123,4 +138,6 @@ public class AuthController {
 
 		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
 	}
+	
+	
 }
